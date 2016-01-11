@@ -64,6 +64,17 @@ TracePoints are linked to objects (arguments, return values, variable values, co
 
 ### Queries using the abstract syntax trees:
 
+#### Get all assignments
+
+```cypher
+  MATCH (a:ASTNode)
+  WHERE a.type IN ['lvasgn', 'ivasgn', 'casgn', 'op_asgn']
+  RETURN a.type, a.name, a.operator, a.expression
+  ORDER BY a.type, a.name
+```
+
+[Example Output](examples/output/assignments.csv)
+
 #### All defined methods:
 
 ```cypher
@@ -76,17 +87,6 @@ TracePoints are linked to objects (arguments, return values, variable values, co
 ```
 
 [Example Output](examples/output/ast.csv)
-
-#### Get all assignments
-
-```cypher
-  MATCH (a:ASTNode)
-  WHERE a.type IN ['lvasgn', 'ivasgn', 'casgn', 'op_asgn']
-  RETURN a.type, a.name, a.operator, a.expression
-  ORDER BY a.type, a.name
-```
-
-[Example Output](examples/output/assignments.csv)
 
 #### Assignment-Branch-Condition (ABC) Metric
 
