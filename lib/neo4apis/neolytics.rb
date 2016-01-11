@@ -9,7 +9,7 @@ module Neo4Apis
     uuid :ASTNode, :uuid
     uuid :File, :path
 
-    batch_size 10000
+    batch_size 6000
 
     IMPORTED_OBJECT_NODES = {}
 
@@ -50,16 +50,25 @@ module Neo4Apis
       object_node
     end
 
-    importer :TracePoint do |tp, execution_time, execution_index, last_tracepoint_node, parent, associated_call|
-      next nil if tp.method_id.blank? && tp.defined_class.blank?
+    importer :TracePoint do |tp, execution_time, total_execution_time, execution_index, last_tracepoint_node, parent, associated_call|
+      next nil if tp.method_id.to_s.strip.empty? && tp.defined_class.to_s.strip.empty?
 
+      # if tp.lineno == 19 && tp.event == :line
+      #   require 'pry'
+      #   binding.pry
+      # end
       trace_point_node = add_node :TracePoint, tp, %i(event lineno method_id) do |node|
         node.uuid = SecureRandom.uuid
         node.defined_class = tp.defined_class.to_s
         node.execution_time = execution_time if execution_time
+        node.total_execution_time = total_execution_time if total_execution_time
         node.execution_index = execution_index
 
-        node.path = Pathname.new(tp.path).realpath.to_s
+        node.path = if tp.path == '(eval)'
+          tp.path
+        else
+          Pathname.new(tp.path).realpath.to_s
+        end
       end
 
 
@@ -82,11 +91,16 @@ module Neo4Apis
           object_node = import :Object, value
           add_relationship :HAS_VARIABLE_VALUE, trace_point_node, object_node, variable_name: var
         end
+
+        # TracePointHelpers.each_referenced_object(tp) do |object|
+        #   object_node = import :Object, object
+        #   add_relationship :REFERENCES_OBJECT, trace_point_node, object_node, variable_name: var
+        # end
       end
 
       if tp.event == :call
-        TracePointHelpers.each_received_arguments(tp) do |argument, value|
-          object_node = import :Object, value
+        TracePointHelpers.each_received_arguments(tp) do |argument, object|
+          object_node = import :Object, object
           add_relationship :RECEIVED_ARGUMENT, trace_point_node, object_node, argument_name: argument
         end
       end

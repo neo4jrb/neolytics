@@ -8,6 +8,21 @@ module Neolytics
     def initialize(neo4j_session)
       @neo4j_session = neo4j_session
       @neo4apis_session = Neo4Apis::Neolytics.new(neo4j_session)
+      create_indexes
+    end
+
+    def create_indexes
+      @neo4j_session.query('CREATE INDEX ON :ASTNode(file_path)')
+      @neo4j_session.query('CREATE INDEX ON :ASTNode(first_line)')
+      @neo4j_session.query('CREATE INDEX ON :ASTNode(type)')
+      @neo4j_session.query('CREATE INDEX ON :ASTNode(name)')
+
+      @neo4j_session.query('CREATE INDEX ON :TracePoint(path)')
+      @neo4j_session.query('CREATE INDEX ON :TracePoint(event)')
+      @neo4j_session.query('CREATE INDEX ON :TracePoint(lineno)')
+      @neo4j_session.query('CREATE INDEX ON :TracePoint(defined_class)')
+      @neo4j_session.query('CREATE INDEX ON :TracePoint(method_id)')
+      @neo4j_session.query('CREATE INDEX ON :TracePoint(execution_index)')
     end
 
     def record(&block)
@@ -20,16 +35,24 @@ module Neolytics
           end
         end
 
-        file_paths = @neo4j_session.query("MATCH (tp) WHERE NOT(tp.path IS NULL) RETURN DISTINCT tp.path AS path").map(&:path)
+        @neo4apis_session.instance_variable_get('@buffer').flush
+        query = <<QUERY
+MATCH (tp:TracePoint)
+WHERE NOT(tp.path IS NULL) AND NOT(tp.path = '(eval)')
+RETURN DISTINCT tp.path AS path
+QUERY
+        file_paths = @neo4j_session.query(query).map(&:path)
         file_paths.each(&method(:record_ast))
 
         link_query = <<QUERY
-MATCH (tp:TracePoint), (node:ASTNode)
+MATCH (tp:TracePoint)
+WITH tp, tp.lineno AS lineno, tp.path AS path, tp.method_id AS method_id
+MATCH (node:ASTNode {type: 'def'})
+USING INDEX node:ASTNode(name)
 WHERE
-  node.file_path = tp.path AND
-  node.first_line = tp.lineno AND
-  node.name = tp.method_id AND
-  node.type = 'def'
+  node.name = method_id AND
+  node.file_path = path AND
+  node.first_line = lineno
 MERGE (tp)-[:HAS_AST_NODE]->(node)
 QUERY
         @neo4j_session.query(link_query)
@@ -43,7 +66,11 @@ QUERY
       code = File.read(full_path)
 
       require 'parser/current'
-      root = Parser::CurrentRuby.parse(code)
+      begin
+        root = Parser::CurrentRuby.parse(code)
+      rescue EncodingError
+        return
+      end
 
       file_node = @neo4apis_session.import :File, full_path, code
       node_node = @neo4apis_session.import :ASTNode, root, file_node
@@ -58,6 +85,7 @@ QUERY
       last_start_time = nil
       ancestor_stack = []
       run_time_stack = []
+      total_run_time_stack = []
 
       last_tracepoint_end_time = nil
       last_run_time = nil
@@ -66,15 +94,23 @@ QUERY
         begin
           last_run_time = 1_000_000.0 * (Time.now - last_tracepoint_end_time) if last_tracepoint_end_time
 
+          start = Time.now
           output << tracepoint_string(tp, indent)
 
           last_method_time = nil
           if [:call, :c_call].include?(tp.event)
             run_time_stack.push(0)
+            total_run_time_stack.push(0)
           elsif [:return, :c_return].include?(tp.event)
             last_method_time = run_time_stack.pop
+            last_method_total_time = total_run_time_stack.pop
           else
-            run_time_stack[-1] += last_run_time if run_time_stack[-1] && last_run_time
+            #puts "total_run_time_stack: #{total_run_time_stack.inspect}"
+            #puts "increment by #{last_run_time}"
+            if run_time_stack[-1] && last_run_time
+              run_time_stack[-1] += last_run_time
+              total_run_time_stack.map! { |i| i + last_run_time }
+            end
           end
 
           associated_call = nil
@@ -87,6 +123,7 @@ QUERY
 
           last_tracepoint_node = @neo4apis_session.import :TracePoint, tp,
                               last_method_time,
+                              last_method_total_time,
                               (execution_index += 1),
                               last_tracepoint_node,
                               ancestor_stack.last,
@@ -96,6 +133,12 @@ QUERY
             ancestor_stack.push(last_tracepoint_node)
           end
 
+          stop = Time.now
+          diff = stop - start
+          if diff > 0.5
+            puts "time: #{diff}"
+            puts "tp: #{tp.inspect}"
+          end
           last_tracepoint_end_time = Time.now
         rescue Exception => e
           puts 'EXCEPTION!!'

@@ -14,14 +14,18 @@ module Neo4Apis
             tp.self.class.instance_method(tp.method_id)
           end
           parameter_names = method.parameters.map {|_, name| name }
-          arguments = parameter_names.each_with_object({}) do |name, arguments|
+          arguments = parameter_names.compact.each_with_object({}) do |name, arguments|
             catch :not_found do
+              begin
               arguments[name] = get_trace_point_var(tp, name)
+              rescue Exception => e
+                require 'pry'
+                binding.pry
+              end
             end
           end
           arguments.each do |name, object|
-            value = RubyObject.from_object(object)
-            yield name, value
+            yield name, object
           end
         end
 
@@ -36,7 +40,18 @@ module Neo4Apis
           end
         rescue Parser::SyntaxError
           nil
-        end    
+        end
+
+        def each_referenced_object(tp)
+          line = get_file_line(tp.path, tp.lineno)
+          root = Parser::CurrentRuby.parse(line)
+          extract_object_references(root).each do |inspect_string|
+            value = tp.binding.eval(inspect_string)
+            yield value
+          end
+        rescue Parser::SyntaxError
+          nil
+        end
 
         private
 
@@ -56,7 +71,23 @@ module Neo4Apis
           end
         end
 
+        OBJECT_NODE_TYPES = [:str, :sym, :int, :float, :hash, :array, :true, :false, :nil]
+        def extract_object_references(ast_node)
+          if ast_node.is_a?(Parser::AST::Node)
+            if OBJECT_NODE_TYPES.include?(ast_node.type)
+              [ast_node.children[0].inspect]
+            else
+              ast_node.children.flat_map do |child|
+                extract_object_references(child)
+              end
+            end
+          else
+            []
+          end
+        end
+
         def get_file_line(path, lineno)
+          return '' if path == '(eval)'
           FILE_LINES[path] ||= File.read(path).lines
 
           FILE_LINES[path][lineno - 1]
@@ -64,7 +95,7 @@ module Neo4Apis
 
         def get_trace_point_var(tp, var_name)
           begin
-            tp.binding.local_variable_get(variable)
+            tp.binding.local_variable_get(var_name)
           rescue NameError
             throw :not_found
           end
