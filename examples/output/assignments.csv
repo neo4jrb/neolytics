@@ -1,0 +1,113 @@
+a.type,a.name,a.operator,a.expression
+casgn,ABORTED,=,ABORTED = Object.new
+casgn,ABSTRACT_RAILTIES,=,ABSTRACT_RAILTIES = %w(Rails::Railtie Rails::Engine Rails::Application)
+casgn,ACCEPTABLE_ATTRIBUTES,=,ACCEPTABLE_ATTRIBUTES = Set.new %w[abbr accept accept-charset accesskey action
+      align alt axis border cellpadding cellspacing char charoff charset
+      checked cite class clear cols colspan color compact coords datetime
+      dir disabled enctype for frame headers height href hreflang hspace id
+      ismap label lang longdesc loop loopcount loopend loopstart
+      maxlength media method multiple name nohref
+      noshade nowrap poster preload prompt readonly rel rev rows rowspan rules scope
+      selected shape size span src start style summary tabindex target title
+      type usemap valign value vspace width xml:lang]
+casgn,ACCEPTABLE_CSS_KEYWORDS,=,ACCEPTABLE_CSS_KEYWORDS = Set.new %w[auto aqua black block blue bold both bottom
+      brown center collapse dashed dotted fuchsia gray green !important
+      italic left lime maroon medium none navy normal nowrap olive pointer
+      purple red right solid silver teal top transparent underline white
+      yellow]
+casgn,ACCEPTABLE_CSS_PROPERTIES,=,ACCEPTABLE_CSS_PROPERTIES = Set.new %w[azimuth background-color
+      border-bottom-color border-collapse border-color border-left-color
+      border-right-color border-top-color clear color cursor direction
+      display elevation float font font-family font-size font-style
+      font-variant font-weight height letter-spacing line-height overflow
+      pause pause-after pause-before pitch pitch-range richness speak
+      speak-header speak-numeral speak-punctuation speech-rate stress
+      text-align text-decoration text-indent unicode-bidi vertical-align
+      voice-family volume white-space width]
+casgn,ACCEPTABLE_ELEMENTS,=,ACCEPTABLE_ELEMENTS = Set.new %w[a abbr acronym address area
+      article aside audio b bdi bdo big blockquote br button canvas
+      caption center cite code col colgroup command datalist dd del
+      details dfn dir div dl dt em fieldset figcaption figure footer
+      font form h1 h2 h3 h4 h5 h6 header hr i img input ins kbd label
+      legend li map mark menu meter nav ol output optgroup option p
+      pre q s samp section select small span strike strong sub summary
+      sup table tbody td textarea tfoot th thead time tr tt u ul var
+      video]
+casgn,ACCEPTABLE_PROTOCOLS,=,ACCEPTABLE_PROTOCOLS = Set.new %w[ed2k ftp http https irc mailto news gopher nntp
+      telnet webcal xmpp callto feed urn aim rsync tag ssh sftp rtsp afs]
+casgn,ACCEPTABLE_SVG_PROPERTIES,=,ACCEPTABLE_SVG_PROPERTIES = Set.new %w[fill fill-opacity fill-rule stroke
+      stroke-width stroke-linecap stroke-linejoin stroke-opacity]
+casgn,ACTION_ATTR,=,ACTION_ATTR = ['action']
+casgn,ACTUALLY_ELEMENTS,=,ACTUALLY_ELEMENTS = %w[after before first-line first-letter].to_set
+casgn,AF_INET6,=,AF_INET6 = Object.new
+casgn,ALIGN_ATTR,=,ALIGN_ATTR = ['align']
+casgn,ALL,=,"Mime::ALL = Mime::Type.new(""*/*"", :all, [])"
+casgn,ALLOWED_ATTRIBUTES,=,ALLOWED_ATTRIBUTES = ACCEPTABLE_ATTRIBUTES + MATHML_ATTRIBUTES + SVG_ATTRIBUTES
+casgn,ALLOWED_CSS_KEYWORDS,=,ALLOWED_CSS_KEYWORDS = ACCEPTABLE_CSS_KEYWORDS
+casgn,ALLOWED_CSS_PROPERTIES,=,ALLOWED_CSS_PROPERTIES = ACCEPTABLE_CSS_PROPERTIES
+casgn,ALLOWED_ELEMENTS,=,ALLOWED_ELEMENTS = ACCEPTABLE_ELEMENTS + MATHML_ELEMENTS + SVG_ELEMENTS
+casgn,ALLOWED_ELEMENTS_WITH_LIBXML2,=,ALLOWED_ELEMENTS_WITH_LIBXML2 = ALLOWED_ELEMENTS + TAGS_SAFE_WITH_LIBXML2
+casgn,ALLOWED_PROTOCOLS,=,ALLOWED_PROTOCOLS = ACCEPTABLE_PROTOCOLS
+casgn,ALLOWED_SVG_PROPERTIES,=,ALLOWED_SVG_PROPERTIES = ACCEPTABLE_SVG_PROPERTIES
+casgn,ALLOW_COMBINATOR_ON_SELF,=,"ALLOW_COMBINATOR_ON_SELF = [:DIRECT_ADJACENT_SELECTOR, :FOLLOWING_SELECTOR, :CHILD_SELECTOR]"
+casgn,ALNUM,=,"ALNUM = ""#{ALPHA}\\d"""
+casgn,ALPHA,=,"ALPHA = ""a-zA-Z"""
+casgn,ALTERNATE_COLOR_NAMES,=,"ALTERNATE_COLOR_NAMES = Sass::Util.map_vals({
+        'aqua'                 => 0x00FFFFFF,
+        'darkgrey'             => 0xA9A9A9FF,
+        'darkslategrey'        => 0x2F4F4FFF,
+        'dimgrey'              => 0x696969FF,
+        'fuchsia'              => 0xFF00FFFF,
+        'grey'                 => 0x808080FF,
+        'lightgrey'            => 0xD3D3D3FF,
+        'lightslategrey'       => 0x778899FF,
+        'slategrey'            => 0x708090FF,
+    }, &method(:int_to_rgba))"
+casgn,ALT_ATTR,=,ALT_ATTR = ['alt']
+casgn,ALWAYS_WHITELISTED_NETWORKS,=,ALWAYS_WHITELISTED_NETWORKS = %w( 127.0.0.0/8 ::1 )
+casgn,AMPM_TRANSLATION,=,"AMPM_TRANSLATION = Hash[
+        [[0, ""12 AM""], [1, ""01 AM""], [2, ""02 AM""], [3, ""03 AM""],
+         [4, ""04 AM""], [5, ""05 AM""], [6, ""06 AM""], [7, ""07 AM""],
+         [8, ""08 AM""], [9, ""09 AM""], [10, ""10 AM""], [11, ""11 AM""],
+         [12, ""12 PM""], [13, ""01 PM""], [14, ""02 PM""], [15, ""03 PM""],
+         [16, ""04 PM""], [17, ""05 PM""], [18, ""06 PM""], [19, ""07 PM""],
+         [20, ""08 PM""], [21, ""09 PM""], [22, ""10 PM""], [23, ""11 PM""]]
+      ].freeze"
+casgn,ANY,=,ANY = /:(-[-\w]+-)?any\(/i
+casgn,APPLET_ATTRS,=,"APPLET_ATTRS = [COREATTRS , 'codebase',
+                      'archive', 'alt', 'name', 'height', 'width', 'align',
+                      'hspace', 'vspace']"
+casgn,AREA_ATTRS,=,"AREA_ATTRS = ['shape', 'coords', 'href', 'nohref',
+                    'tabindex', 'accesskey', 'onfocus', 'onblur']"
+casgn,ARRAYS,=,ARRAYS = {}
+casgn,ASSET_EXTENSIONS,=,"ASSET_EXTENSIONS = {
+        javascript: '.js',
+        stylesheet: '.css'
+      }"
+casgn,ASSET_PUBLIC_DIRECTORIES,=,"ASSET_PUBLIC_DIRECTORIES = {
+        audio:      '/audios',
+        font:       '/fonts',
+        image:      '/images',
+        javascript: '/javascripts',
+        stylesheet: '/stylesheets',
+        video:      '/videos'
+      }"
+casgn,ASSIGNMENT,=,"ASSIGNMENT     = ""="".freeze"
+casgn,ASSOCIATIVE,=,"ASSOCIATIVE = [:plus, :times]"
+casgn,AS_BUILDER,=,AS_BUILDER    = 128
+casgn,AS_HTML,=,AS_HTML         = 64
+casgn,AS_XHTML,=,AS_XHTML        = 16
+casgn,AS_XML,=,AS_XML          = 32
+casgn,ATOMIC_WRITE_MUTEX,=,ATOMIC_WRITE_MUTEX = Mutex.new
+casgn,ATTRIBUTE_DECL,=,ATTRIBUTE_DECL =     16
+casgn,ATTRIBUTE_NODE,=,ATTRIBUTE_NODE =     2
+casgn,ATTRS,=,"ATTRS = [COREATTRS, I18N,EVENTS]"
+casgn,ATTR_VAL_IS_URI,=,ATTR_VAL_IS_URI = Set.new %w[href src cite action longdesc xlink:href xml:base poster preload]
+casgn,AWAIT_ACTION,=,"AWAIT_ACTION = ->(value, latch) { latch.count_down; AWAIT_FLAG }"
+casgn,AWAIT_FLAG,=,AWAIT_FLAG = Object.new
+casgn,A_ATTRS,=,"A_ATTRS = [ATTRS, 'charset', 'type', 'name',
+                 'href', 'hreflang', 'rel', 'rev', 'accesskey', 'shape',
+                 'coords', 'tabindex', 'onfocus', 'onblur']"
+casgn,AbortError,=,AbortError = Class.new(StandardError)
+casgn,AmbiguousTaskError,=,AmbiguousTaskError = AmbiguousCommandError
+casgn,AtExit,=,AtExit = AtExitImplementation.new.install

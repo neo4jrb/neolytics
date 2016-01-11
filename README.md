@@ -34,17 +34,45 @@ All you need to do to use Neolytics is
 
 During the code execution 
 
+## Model:
+
+Neolytics generates the following structures:
+
+### Abstract Syntax Trees
+
+![Abstract Syntax Tree](examples/model/ast.png)
+
+### TracePoint execution tracking
+
+![Abstract Syntax Tree](examples/model/trace_point_flow.png)
+
+### Objects (including recursively browsed class and modules)
+
+![Abstract Syntax Tree](examples/model/object_relationships.png)
+
+### Links between these domains
+
+TracePoints are linked to AST nodes:
+
+![Abstract Syntax Tree](examples/model/trace_point_ast_nodes.png)
+
+TracePoints are linked to objects (arguments, return values, variable values, context objects):
+
+![Abstract Syntax Tree](examples/model/trace_point_objects.png)
+
 ## Example queries:
 
-### Abstract Syntax Tree queries:
+### Queries using the abstract syntax trees:
 
 #### All defined methods:
 
 ```cypher
-  MATCH (n:ASTNode {type: 'class'})<-[:HAS_PARENT*]-(def:ASTNode {type: 'def'})
-  RETURN def.name, def.file_path, def.first_line
-  ORDER BY def.first_line
+  MATCH (def:ASTNode {type: 'def'})
+  WITH def
+  ORDER BY def.file_path, def.first_line
   LIMIT 50
+  MATCH shortestPath((def)-[:HAS_PARENT*]->(class:ASTNode {type: 'class'}))
+  RETURN def.file_path +':'+ def.first_line AS line, class.name AS class, def.name AS method
 ```
 
 [Example Output](examples/output/ast.csv)
@@ -57,6 +85,8 @@ During the code execution
   RETURN a.type, a.name, a.operator, a.expression
   ORDER BY a.type, a.name
 ```
+
+[Example Output](examples/output/assignments.csv)
 
 #### Assignment-Branch-Condition (ABC) Metric
 
@@ -79,6 +109,8 @@ During the code execution
   ORDER BY abc DESC
 ```
 
+[Example Output](examples/output/abc.csv)
+
 #### Cyclomatic Complexity
 
 ```cypher
@@ -87,8 +119,22 @@ During the code execution
   WHERE condition.type IN ['begin', 'if', 'while', 'until', 'for', 'rescue', 'when', 'and', 'or']
   RETURN def.name, def.file_path, def.first_line, count(condition)
   ORDER BY count(condition) DESC
+  LIMIT 50
 ```
 
+[Example Output](examples/output/cyclomatic_complexity.csv)
+
+
+#### All args / vars / statics / etc... in a class
+
+```cypher
+  MATCH (:ASTNode {name: 'Numeric', type: 'class'})<-[:HAS_PARENT*]-(n:ASTNode)
+  WHERE n.type IN ['def', 'arg', 'optarg', 'restarg', 'lvar', 'const', 'sym']
+  RETURN n.type, n.expression, n.name
+  ORDER BY n.type, n.expression
+```
+
+[Example Output](examples/output/all_args_vars_statics.csv)
 
 ### TracePoint queries
 
@@ -98,8 +144,11 @@ During the code execution
   MATCH (tp:TracePoint)
   WITH tp.path AS path, tp.lineno AS line, tp.defined_class AS class, tp.method_id AS method_id, sum(tp.execution_time) AS sum, count(tp) AS count
   ORDER BY sum(tp.execution_time) DESC
-  RETURN path +':'+ line AS line, class +'#'+ method_id AS method, sum, count, sum / count AS sum_by_count
+  RETURN path +':'+ line AS line, class +'#'+ method_id AS method, sum, count, sum / count AS average
+  LIMIT 50
 ```
+
+[Example Output](examples/output/time_spent_by_method.csv)
 
 #### Common ancestor
 
@@ -114,7 +163,9 @@ During the code execution
   RETURN tp1, tp2, common_ancestor, length(path1), length(path2)
 ```
 
-#### See everything that has been returned and from where
+[Example Output](examples/output/common_ancestor.csv)
+
+#### See all arguments and return values for methods
 
 ```cypher
   MATCH (start_tp:TracePoint)
@@ -134,6 +185,7 @@ During the code execution
   LIMIT 30
 ```
 
+[Example Output](examples/output/arguments_and_return_values.csv)
 
 #### Show all returns values from a particular superclass (i.e. Asking for `Numeric` gives `Fixnum`, `Rational`, `BigDecimal`, etc... types)
 
@@ -144,6 +196,10 @@ During the code execution
   ORDER BY tp.execution_index
 ```
 
+[Example Output](examples/output/numeric_return_values.csv)
+
+### Object space queries:
+
 #### Show class hierarchy for `Numeric` class:
 
 ```cypher
@@ -151,16 +207,44 @@ During the code execution
   RETURN *
 ```
 
+**Example Output:**
+
+![Example Output](examples/output/numeric_class_hierarchy.png)
+
 ### Combination queries
 
-#### All args / vars / statics / etc... in a class
+#### Combining cyclomatic complexity and run-time metrics
 
 ```cypher
-  MATCH (:ASTNode {name: 'Numeric', type: 'class'})<-[:HAS_PARENT*]-(n:ASTNode)
-  WHERE n.type IN ['def', 'arg', 'optarg', 'restarg', 'lvar', 'const', 'sym']
-  RETURN n.type, n.expression, n.name
-  ORDER BY n.type, n.expression
+  MATCH (tp:TracePoint)
+  WITH sum(tp.execution_time) AS total_execution_time
+
+  MATCH (node:ASTNode {type: 'def'})
+  OPTIONAL MATCH (node)<-[:HAS_PARENT*]-(condition:ASTNode)
+  WHERE condition.type IN ['begin', 'if', 'while', 'until', 'for', 'rescue', 'when', 'and', 'or']
+  WITH node, count(condition) AS cyclomatic_complexity, total_execution_time
+
+  MATCH (node)<-[:HAS_AST_NODE]-(tp:TracePoint)<-[:STARTED_AT]-(return_tp:TracePoint)
+
+  WITH
+    cyclomatic_complexity,
+    total_execution_time,
+    tp.path + ':' + tp.lineno + ' (' + return_tp.defined_class + '#' + return_tp.method_id + ')' AS method,
+    count(tp) AS executions,
+    sum(return_tp.execution_time) AS total_method_execution_time
+
+  RETURN
+    method,
+    cyclomatic_complexity,
+    executions,
+    total_method_execution_time,
+    100.0 * (total_method_execution_time / total_execution_time) AS percentage_of_total_time,
+    total_method_execution_time / executions AS average_execution_time
+
+  ORDER BY total_method_execution_time DESC
 ```
+
+[Example Output](examples/output/cyclomatic_complexity_and_runtime.csv)
 
 ## Development
 

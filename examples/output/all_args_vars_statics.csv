@@ -1,0 +1,117 @@
+n.type,n.expression,n.name
+const,ActiveSupport,ActiveSupport
+const,ActiveSupport,ActiveSupport
+const,ActiveSupport,ActiveSupport
+const,ActiveSupport,ActiveSupport
+const,ActiveSupport,ActiveSupport
+const,ActiveSupport,ActiveSupport
+const,ActiveSupport::Duration,Duration
+const,ActiveSupport::Duration,Duration
+const,ActiveSupport::Duration,Duration
+const,ActiveSupport::Duration,Duration
+const,ActiveSupport::Duration,Duration
+const,ActiveSupport::Duration,Duration
+const,EXABYTE,EXABYTE
+const,GIGABYTE,GIGABYTE
+const,GIGABYTE,GIGABYTE
+const,KILOBYTE,KILOBYTE
+const,KILOBYTE,KILOBYTE
+const,MEGABYTE,MEGABYTE
+const,MEGABYTE,MEGABYTE
+const,Numeric,Numeric
+const,Numeric,Numeric
+const,Numeric,Numeric
+const,Numeric,Numeric
+const,Numeric,Numeric
+const,Numeric,Numeric
+const,PETABYTE,PETABYTE
+const,PETABYTE,PETABYTE
+const,TERABYTE,TERABYTE
+const,TERABYTE,TERABYTE
+def,def as_json(options = nil) #:nodoc:
+    self
+  end,as_json
+def,def blank?
+    false
+  end,blank?
+def,def bytes
+    self
+  end,bytes
+def,"def days
+    ActiveSupport::Duration.new(self * 24.hours, [[:days, self]])
+  end",days
+def,def duplicable?
+    false
+  end,duplicable?
+def,def exabytes
+    self * EXABYTE
+  end,exabytes
+def,"def fortnights
+    ActiveSupport::Duration.new(self * 2.weeks, [[:days, self * 14]])
+  end",fortnights
+def,def gigabytes
+    self * GIGABYTE
+  end,gigabytes
+def,"def hours
+    ActiveSupport::Duration.new(self * 3600, [[:seconds, self * 3600]])
+  end",hours
+def,def html_safe?
+    true
+  end,html_safe?
+def,def in_milliseconds
+    self * 1000
+  end,in_milliseconds
+def,def kilobytes
+    self * KILOBYTE
+  end,kilobytes
+def,def megabytes
+    self * MEGABYTE
+  end,megabytes
+def,"def minutes
+    ActiveSupport::Duration.new(self * 60, [[:seconds, self * 60]])
+  end",minutes
+def,def petabytes
+    self * PETABYTE
+  end,petabytes
+def,"def seconds
+    ActiveSupport::Duration.new(self, [[:seconds, self]])
+  end",seconds
+def,def terabytes
+    self * TERABYTE
+  end,terabytes
+def,"def weeks
+    ActiveSupport::Duration.new(self * 7.days, [[:days, self * 7]])
+  end",weeks
+optarg,options = nil,options
+sym,:byte,
+sym,:bytes,
+sym,:day,
+sym,:days,
+sym,:days,
+sym,:days,
+sym,:days,
+sym,:exabyte,
+sym,:exabytes,
+sym,:fortnight,
+sym,:fortnights,
+sym,:gigabyte,
+sym,:gigabytes,
+sym,:hour,
+sym,:hours,
+sym,:kilobyte,
+sym,:kilobytes,
+sym,:megabyte,
+sym,:megabytes,
+sym,:minute,
+sym,:minutes,
+sym,:petabyte,
+sym,:petabytes,
+sym,:second,
+sym,:seconds,
+sym,:seconds,
+sym,:seconds,
+sym,:seconds,
+sym,:terabyte,
+sym,:terabytes,
+sym,:week,
+sym,:weeks,
