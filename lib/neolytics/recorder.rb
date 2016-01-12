@@ -38,7 +38,7 @@ module Neolytics
         @neo4apis_session.instance_variable_get('@buffer').flush
         query = <<QUERY
 MATCH (tp:TracePoint)
-WHERE NOT(tp.path IS NULL) AND NOT(tp.path = '(eval)')
+WHERE NOT(tp.path IS NULL) AND NOT(tp.path = '(eval)' OR tp.path = '(irb)')
 RETURN DISTINCT tp.path AS path
 QUERY
         file_paths = @neo4j_session.query(query).map(&:path)
@@ -93,6 +93,8 @@ QUERY
       trace = TracePoint.new do |tp|
         begin
           last_run_time = 1_000_000.0 * (Time.now - last_tracepoint_end_time) if last_tracepoint_end_time
+
+          next if tp.path.match(%r{/neolytics/})
 
           start = Time.now
           output << tracepoint_string(tp, indent)

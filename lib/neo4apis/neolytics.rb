@@ -64,7 +64,7 @@ module Neo4Apis
         node.total_execution_time = total_execution_time if total_execution_time
         node.execution_index = execution_index
 
-        node.path = if tp.path == '(eval)'
+        node.path = if ['(eval)', '(irb)'].include?(tp.path)
           tp.path
         else
           Pathname.new(tp.path).realpath.to_s

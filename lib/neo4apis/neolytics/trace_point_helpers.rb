@@ -87,7 +87,7 @@ module Neo4Apis
         end
 
         def get_file_line(path, lineno)
-          return '' if path == '(eval)'
+          return '' if ['(eval)', '(irb)'].include?(path)
           FILE_LINES[path] ||= File.read(path).lines
 
           FILE_LINES[path][lineno - 1]
